@@ -1,5 +1,6 @@
 ---
 title: "Function Level Access Control"
+excerpt_separator: "<!--more-->"
 date: 2024-12-11
 categories:
   - blog
@@ -8,7 +9,8 @@ tags:
   - spring
   - rbac
 ---
-Function level access control (FLAC) also known as Function-Level Authorization, is a security mechanism used to ensure that users can only access application functionalities that they are authorized to use.
+Function level access control (FLAC) also known as Function-Level Authorization, is a security mechanism used to ensure that users can only access application functionalities that they are authorized to use.<!--more-->
+
 It is often implemented using RBAC (Role-Based Access Control) techniques. RBAC applications defines a set of roles (like 'Admin' or 'User') that are checked when trying to access privileged endpoints to ensure the user has the required permissions in order to execute the business function.
 Failing to check these permissions would allow, for example, a regular 'User' to get access to privileged endpoints aimed for an 'Admin' role.
 
@@ -34,19 +36,20 @@ The Spring authorization filter allows for easy configuration of access control 
 ```java
 @Configuration
 @EnableWebSecurity
-public class AuthorizationConfig {
+public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-				        .requestMatchers("/").permitAll()
-				        .requestMatchers("/reports/**").authenticated()
-				        .requestMatchers("/developper-portal").hasRole("DEV")
-				        .requestMatchers("/config").hasAnyRole("DEV", "ADMIN")
-				        .anyRequest().authenticated()
-			      )
-			      .and()
-			      .formLogin(Customizer.withDefaults());
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/reports/**").authenticated()
+                .requestMatchers("/developper-portal").hasRole("DEV")
+                .requestMatchers("/config").hasAnyRole("DEV", "ADMIN")
+                .anyRequest().authenticated()
+            )
+            .and()
+            .formLogin(Customizer.withDefaults());
         return http.build();
     }
 }
