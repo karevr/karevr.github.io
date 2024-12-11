@@ -28,11 +28,12 @@ Failing to check these permissions would allow, for example, a regular 'User' to
  - Authorization should be applied using centralized routines either provided by the framework or easy to use external modules
 
 ## Function Level Access Control in Spring
-The Spring authorization filter allows for easy configuration of access control within an application setting up rules, which are defined using RequestMatchers. Keep in mind that the order of configuration matters.
+The Spring Security authorization filter allows you easy configuration of access control within an application setting up rules, which are defined using RequestMatchers. Keep in mind that the order of configuration matters.
  - First, configure all the endpoints that require authentication.
  - Then, if roles are defined, specify role-based access control.
  - Use the deny by default principle.
 
+### Security Configuration
 ```java
 @Configuration
 @EnableWebSecurity
@@ -41,16 +42,48 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/reports/**").authenticated()
-                .requestMatchers("/developper-portal").hasRole("DEV")
-                .requestMatchers("/config").hasAnyRole("DEV", "ADMIN")
-                .anyRequest().authenticated()
+            .authorizeHttpRequests(request -> request
+                .antMatchers("/reports/**").authenticated()
+                .antMatchers("/developper-portal").hasRole("DEV")
+                .antMatchers("/config").hasAnyRole("DEV", "ADMIN")
+                .antMatchers("/").permitAll()
             )
             .and()
             .formLogin(Customizer.withDefaults());
         return http.build();
+    }
+}
+```
+
+### Enable Method Security
+
+```java
+@Configuration
+@EnableMethodSecurity
+public class MethodSecurityConfig {
+    // Additional security configurations can go here
+}
+```
+
+Spring security provides annotations to enforce security at class/method level. With method security enabled use @PreAuthorize, @PostAuthorize, or @Secured annotations to specify access controls on service methods.
+
+```java
+@Service
+public class MyService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void adminFunction() {
+        // Admin-only functionality
+    }
+
+    @PostAuthorize("hasRole('USER')")
+    public void userFunction() {
+        // User-only functionality
+    }
+
+    @Secured("USER", "ADMIN")
+    public void userAndAdminFunction() {
+        // Admin/User functionality
     }
 }
 ```
